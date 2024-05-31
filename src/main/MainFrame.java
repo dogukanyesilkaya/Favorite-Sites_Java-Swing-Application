@@ -4,7 +4,7 @@ import java.awt.event.ActionListener;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public class MainFrame extends JFrame{
+public class MainFrame extends FrameSuperClass{
     private JPanel mainPanel;
     private JLabel usernameDisplay;
     private JButton displayFunctionsButton;
@@ -13,7 +13,7 @@ public class MainFrame extends JFrame{
     private JButton backButton;
 
 
-    public MainFrame(Connection connection,String username){
+    public MainFrame(String username){
         add(mainPanel);
         setSize(400,400);
         setTitle("FavoriteSites Main Frame");
@@ -37,21 +37,21 @@ public class MainFrame extends JFrame{
         locationFunctionsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                LocationFunctionsFrame locationFunctionsFrame = new LocationFunctionsFrame(connection,username);
+                LocationFunctionsFrame locationFunctionsFrame = new LocationFunctionsFrame(username);
             }
         });
 
         displayFunctionsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                DisplayFunctionsFrame displayFunctionsFrame = new DisplayFunctionsFrame(connection,username);
+                DisplayFunctionsFrame displayFunctionsFrame = new DisplayFunctionsFrame(GetDatabaseConnection(),username);
             }
         });
 
         shareFrameButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ShareFunctionsFrame shareFunctionsFrame = new ShareFunctionsFrame(connection,username);
+                ShareFunctionsFrame shareFunctionsFrame = new ShareFunctionsFrame(GetDatabaseConnection(),username);
             }
         });
 

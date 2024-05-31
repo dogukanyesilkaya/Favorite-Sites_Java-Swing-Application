@@ -105,7 +105,7 @@
           <text value="Season Visited"/>
         </properties>
       </component>
-      <component id="511f8" class="javax.swing.JTextField" binding="seasonTField">
+      <component id="fc1b8" class="javax.swing.JComboBox" binding="seasonComboBox">
         <constraints>
           <grid row="11" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
             <preferred-size width="150" height="-1"/>

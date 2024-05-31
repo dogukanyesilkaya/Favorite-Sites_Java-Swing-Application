@@ -16,7 +16,7 @@ public class LocationFunctionsFrame extends FrameSuperClass{
     private JTextField countryNameTField;
     private JTextField cityNameTField;
     private JTextField yearTField;
-    private JTextField seasonTField;
+    private JComboBox seasonComboBox;
     private JSlider ratingSlider;
     private JComboBox featureComboBox;
     private JTextField commentTField;
@@ -35,12 +35,11 @@ public class LocationFunctionsFrame extends FrameSuperClass{
     ButtonGroup functionRadioButtons;
     ButtonGroup subFunctionRadioButtons;
 
-    Connection databaseConnection;
     String username;
 
 
-    public LocationFunctionsFrame(Connection connection,String username){
-        databaseConnection = connection;
+    public LocationFunctionsFrame(String username){
+        SetupDatabaseConnection();
         this.username = username;
 
         add(mainPanel);
@@ -54,7 +53,8 @@ public class LocationFunctionsFrame extends FrameSuperClass{
 
         SetupFunctionRadioButtons();
         SetupFeatureComboBox();
-        SetupVisitIdComboBox();
+        SetupSeasonComboBox();
+        UpdateVisitIdComboBox();
 
         HandleFieldSelectionLogic();
 
@@ -71,6 +71,7 @@ public class LocationFunctionsFrame extends FrameSuperClass{
                 switch (selection){
                     case "addVisit":
                         AddVisitFunctionality();
+                        UpdateVisitIdComboBox();
                         break;
                     case "displayVisit":
                         try {
@@ -81,6 +82,7 @@ public class LocationFunctionsFrame extends FrameSuperClass{
                         break;
                     case "deleteVisit":
                         DeleteVisitFunctionality();
+                        UpdateVisitIdComboBox();
                         break;
 
                     case "updateVisit":
@@ -98,123 +100,72 @@ public class LocationFunctionsFrame extends FrameSuperClass{
     private void AddVisitFunctionality(){
         String query = "INSERT INTO visits(countryName,cityName,yearVisited,seasonVisited,bestFeature,comment,rating,username)" +
                 "VALUES (?,?,?,?,?,?,?,?)";
-        try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1,countryNameTField.getText());
-            preparedStatement.setString(2,cityNameTField.getText());
-            preparedStatement.setString(3,yearTField.getText());
-            preparedStatement.setString(4,seasonTField.getText());
-            preparedStatement.setString(5,featureComboBox.getSelectedItem().toString());
-            preparedStatement.setString(6,commentTField.getText());
-            preparedStatement.setString(7,""+ratingSlider.getValue());
-            preparedStatement.setString(8,username);
 
-            int addedRow = preparedStatement.executeUpdate();
-            if(addedRow>0){
-                JOptionPane.showMessageDialog(null, "You have successfully added location");
-            }else{
-                JOptionPane.showMessageDialog(null, "There was a error!");
-            }
-
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
-//        List<String> inputs=new ArrayList<String>();
-//        inputs.add(countryNameTField.getText());
-//        inputs.add(cityNameTField.getText());
-//        inputs.add(yearTField.getText());
-//        inputs.add(seasonTField.getText());
-//        inputs.add(featureComboBox.getSelectedItem().toString());
-//        inputs.add(commentTField.getText());
-//        inputs.add(""+ratingSlider.getValue());
-//        inputs.add(username);
-//        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
-//        RunQueryOnce(preparedStatement,"You have successfully added location","There was a error!");
+        List<String> inputs=new ArrayList<>();
+        inputs.add(countryNameTField.getText());
+        inputs.add(cityNameTField.getText());
+        inputs.add(yearTField.getText());
+        inputs.add(seasonComboBox.getSelectedItem().toString());
+        inputs.add(featureComboBox.getSelectedItem().toString());
+        inputs.add(commentTField.getText());
+        inputs.add(""+ratingSlider.getValue());
+        inputs.add(username);
+        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
+        RunQueryOnce(preparedStatement,"You have successfully added location","There was a error!");
     }
 
     private void DisplayVisitFunctionality() throws SQLException {
         String query = "SELECT * FROM visits WHERE visitid=?";
-        try {
 
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1, visitidComboBox.getSelectedItem().toString());
-            ResultSet resultSet = preparedStatement.executeQuery();
+        List<String> inputs=new ArrayList<>();
+        inputs.add(visitidComboBox.getSelectedItem().toString());
 
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            int columnCount = metaData.getColumnCount();
+        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
 
-            DefaultTableModel tableModel=new DefaultTableModel();
-            // Add columns to table model
-            for (int i = 1; i <= columnCount; i++) {
-                tableModel.addColumn(metaData.getColumnLabel(i));
-            }
+        DefaultTableModel tableModel = FillSQLDataIntoTable(preparedStatement);
 
-            while (resultSet.next()) {
-                Object[] row = new Object[columnCount];
-                for (int i = 1; i <= columnCount; i++) {
-                    row[i - 1] = resultSet.getObject(i);
-                }
-                tableModel.addRow(row);
-            }
-            if(tableModel.getRowCount() != 0){
-                countryNameTField.setText(tableModel.getValueAt(0,0).toString());
-                cityNameTField.setText(tableModel.getValueAt(0,1).toString());
-                yearTField.setText(tableModel.getValueAt(0,2).toString());
-                seasonTField.setText(tableModel.getValueAt(0,3).toString());
-                featureComboBox.setSelectedItem(tableModel.getValueAt(0,4).toString().toString());
-                commentTField.setText(tableModel.getValueAt(0,5).toString());
-                ratingSlider.setValue(Integer.parseInt(tableModel.getValueAt(0,6).toString().toString()));
-            }else{
-                JOptionPane.showMessageDialog(null, "Please select a valid visit ID");
-            }
-        }catch (SQLException sqlException){
-            sqlException.printStackTrace();
+        if(tableModel.getRowCount() != 0){
+            countryNameTField.setText(tableModel.getValueAt(0,0).toString());
+            cityNameTField.setText(tableModel.getValueAt(0,1).toString());
+            yearTField.setText(tableModel.getValueAt(0,2).toString());
+            seasonComboBox.setSelectedItem(tableModel.getValueAt(0,3).toString());
+            featureComboBox.setSelectedItem(tableModel.getValueAt(0,4).toString().toString());
+            commentTField.setText(tableModel.getValueAt(0,5).toString());
+            ratingSlider.setValue(Integer.parseInt(tableModel.getValueAt(0,6).toString().toString()));
+        }else{
+            JOptionPane.showMessageDialog(null, "Please select a valid visit ID");
         }
-
     }
 
     private void DeleteVisitFunctionality(){
         String query = "DELETE FROM visits WHERE username=? AND visitid=?";
-        try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1,username);
-            preparedStatement.setString(2, visitidComboBox.getSelectedItem().toString());
 
-            int addedRow = preparedStatement.executeUpdate();
-            if(addedRow>0){
-                JOptionPane.showMessageDialog(null, "You have successfully removed visit");
-            }
+        List<String> inputs=new ArrayList<String>();
+        inputs.add(username);
+        inputs.add(visitidComboBox.getSelectedItem().toString());
 
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, "Please select a valid visit ID");
-            throw new RuntimeException(ex);
-        }
+        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
+
+        RunQueryOnce(preparedStatement,"You have successfully removed visit","Please select a valid visit ID");
     }
 
     private void UpdateVisitFunctionality() throws SQLException {
         String query = "UPDATE visits SET countryName =?,cityName=?,yearVisited=?,seasonVisited=?," +
                 "bestFeature=?,comment=?,rating=? WHERE visitid=?";
-        try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1,countryNameTField.getText());
-            preparedStatement.setString(2,cityNameTField.getText());
-            preparedStatement.setString(3,yearTField.getText());
-            preparedStatement.setString(4,seasonTField.getText());
-            preparedStatement.setString(5,featureComboBox.getSelectedItem().toString());
-            preparedStatement.setString(6,commentTField.getText());
-            preparedStatement.setString(7,""+ratingSlider.getValue());
-            preparedStatement.setString(8, visitidComboBox.getSelectedItem().toString());
 
-            int addedRow = preparedStatement.executeUpdate();
-            if(addedRow>0){
-                JOptionPane.showMessageDialog(null, "You have successfully updated location");
-            }else{
-                JOptionPane.showMessageDialog(null, "There was an error!");
-            }
-        }catch (SQLException ex){
-            JOptionPane.showMessageDialog(null, "Please select a valid visit ID");
-            throw new RuntimeException(ex);
-        }
+        List<String> inputs=new ArrayList<String>();
+        inputs.add(countryNameTField.getText());
+        inputs.add(cityNameTField.getText());
+        inputs.add(yearTField.getText());
+        inputs.add(seasonComboBox.getSelectedItem().toString());
+        inputs.add(featureComboBox.getSelectedItem().toString());
+        inputs.add(commentTField.getText());
+        inputs.add(""+ratingSlider.getValue());
+        inputs.add(visitidComboBox.getSelectedItem().toString());
+
+        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
+
+        RunQueryOnce(preparedStatement,"You have successfully updated location","There was an error!");
     }
 
     private String getSelectedFunction(){
@@ -290,21 +241,30 @@ public class LocationFunctionsFrame extends FrameSuperClass{
         featureComboBox.addItem("Sightseeing");
         featureComboBox.addItem("Museums");
     }
-    private void SetupVisitIdComboBox(){
+
+    private void SetupSeasonComboBox(){
+        seasonComboBox.addItem("");
+        seasonComboBox.addItem("Spring");
+        seasonComboBox.addItem("Summer");
+        seasonComboBox.addItem("Fall");
+        seasonComboBox.addItem("Winter");
+    }
+    private void UpdateVisitIdComboBox(){
+        visitidComboBox.removeAllItems();
         visitidComboBox.addItem("Not Selected");
 
-        String query = "SELECT visitid FROM visits WHERE username=?;";
-        try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1, username);
-            ResultSet resultSet = preparedStatement.executeQuery();
 
+        String query = "SELECT visitid FROM visits WHERE username=?;";
+        List<String> inputs=new ArrayList<String>();
+        inputs.add(username);
+        try {
+            ResultSet resultSet=FillQueryWithInputs(query,inputs).executeQuery();
             while (resultSet.next()) {
                 visitidComboBox.addItem(resultSet.getObject(1));
             }
-        }catch (SQLException sqlException){
+        } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, "User doesn't have a recorded location!");
-            sqlException.printStackTrace();
+            ex.printStackTrace();
         }
     }
     private void HandleFieldSelectionLogic(){
@@ -316,7 +276,7 @@ public class LocationFunctionsFrame extends FrameSuperClass{
                 countryNameTField.setEditable(false);
                 cityNameTField.setEditable(false);
                 yearTField.setEditable(false);
-                seasonTField.setEditable(false);
+                seasonComboBox.setEnabled(false);
                 featureComboBox.setEnabled(false);
                 commentTField.setEditable(false);
                 ratingSlider.setEnabled(false);
@@ -327,7 +287,7 @@ public class LocationFunctionsFrame extends FrameSuperClass{
                 countryNameTField.setEditable(true);
                 cityNameTField.setEditable(true);
                 yearTField.setEditable(true);
-                seasonTField.setEditable(true);
+                seasonComboBox.setEnabled(true);
                 featureComboBox.setEnabled(true);
                 commentTField.setEditable(true);
                 ratingSlider.setEnabled(true);
@@ -338,7 +298,7 @@ public class LocationFunctionsFrame extends FrameSuperClass{
                 countryNameTField.setEditable(false);
                 cityNameTField.setEditable(false);
                 yearTField.setEditable(false);
-                seasonTField.setEditable(false);
+                seasonComboBox.setEnabled(false);
                 featureComboBox.setEnabled(false);
                 commentTField.setEditable(false);
                 ratingSlider.setEnabled(false);
@@ -349,7 +309,7 @@ public class LocationFunctionsFrame extends FrameSuperClass{
                 countryNameTField.setEditable(false);
                 cityNameTField.setEditable(false);
                 yearTField.setEditable(false);
-                seasonTField.setEditable(false);
+                seasonComboBox.setEnabled(false);
                 featureComboBox.setEnabled(false);
                 commentTField.setEditable(false);
                 ratingSlider.setEnabled(false);
@@ -361,7 +321,7 @@ public class LocationFunctionsFrame extends FrameSuperClass{
                 countryNameTField.setEditable(true);
                 cityNameTField.setEditable(true);
                 yearTField.setEditable(true);
-                seasonTField.setEditable(true);
+                seasonComboBox.setEnabled(true);
                 featureComboBox.setEnabled(true);
                 commentTField.setEditable(true);
                 ratingSlider.setEnabled(true);

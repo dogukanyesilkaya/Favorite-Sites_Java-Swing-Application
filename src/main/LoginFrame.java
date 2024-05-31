@@ -2,6 +2,8 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LoginFrame extends FrameSuperClass{
 
@@ -14,13 +16,8 @@ public class LoginFrame extends FrameSuperClass{
     private JButton registerButton;
     private JCheckBox registerCheckBox;
 
-    Connection databaseConnection;
-    PreparedStatement preparedStatement;
-    ResultSet resultSet;
-
     public LoginFrame() throws SQLException{
         SetupDatabaseConnection();
-
 
         add(mainPanel);
         setSize(400,400);
@@ -37,7 +34,8 @@ public class LoginFrame extends FrameSuperClass{
                 try {
                     if(CheckLoginInformation()){
                         dispose();
-                        MainFrame mainFrame = new MainFrame(databaseConnection,usernameTField.getText());
+                        String loggedInUser = usernameTField.getText();
+                        MainFrame mainFrame = new MainFrame(loggedInUser);
                     }else{
                         JOptionPane.showMessageDialog(null, "Login failed.Please try again");
                     }
@@ -68,52 +66,34 @@ public class LoginFrame extends FrameSuperClass{
     }
 
     private void RegisterUser(){
+        String query="INSERT INTO userinfo(username,password) VALUES (?,?)";
+
         String username = usernameTField.getText();
         String password = new String(passwordPField.getPassword());
-        try {
-            String query="INSERT INTO userinfo(username,password) VALUES (?,?)";
-            preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1,username);
-            preparedStatement.setString(2,password);
 
-            preparedStatement.executeUpdate();
+        List<String> inputs=new ArrayList<>();
+        inputs.add(username);
+        inputs.add(password);
+        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
 
-        }catch (SQLException sqlException){
-            sqlException.printStackTrace();
-        }
+        RunQueryOnce(preparedStatement,"User Successfully Registered!","Registery Failed!");
     }
 
     private boolean CheckLoginInformation() throws SQLException{
+        String query="SELECT * FROM userinfo WHERE username=? AND password=?";
+
         String username = usernameTField.getText();
         String password = new String(passwordPField.getPassword());
-        try {
-            String query="SELECT * FROM userinfo WHERE username=? AND password=?";
-            preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1,username);
-            preparedStatement.setString(2,password);
 
-            resultSet = preparedStatement.executeQuery();
+        List<String> inputs=new ArrayList<>();
+        inputs.add(username);
+        inputs.add(password);
+        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
 
-            return resultSet.next();
+        ResultSet resultSet = preparedStatement.executeQuery();
 
-        }catch (SQLException sqlException){
-            sqlException.printStackTrace();
-        }
+        return resultSet.next();
 
-        return false;
     }
 
-    private void SetupDatabaseConnection() throws SQLException {
-        try {
-
-            String connectionURL="jdbc:mysql://localhost:3306/favoritesites?useSSL=false&allowPublicKeyRetrieval=true";
-            String user="root";
-            String password="1234";
-
-            databaseConnection = DriverManager.getConnection(connectionURL,user,password);
-
-        }catch (SQLException sqlException){
-            sqlException.printStackTrace();
-        }
-    }
 }

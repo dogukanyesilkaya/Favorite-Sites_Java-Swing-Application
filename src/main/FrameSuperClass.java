@@ -1,4 +1,5 @@
 import javax.swing.*;
+import javax.swing.table.DefaultTableModel;
 import java.sql.*;
 import java.util.List;
 
@@ -7,7 +8,7 @@ public class FrameSuperClass extends JFrame {
     private Connection databaseConnection;
 
 
-    public void SetupDatabaseConnection_new() {
+    public void SetupDatabaseConnection() {
         try {
 
             String connectionURL = "jdbc:mysql://localhost:3306/favoritesites?useSSL=false&allowPublicKeyRetrieval=true";
@@ -21,7 +22,7 @@ public class FrameSuperClass extends JFrame {
         }
     }
 
-    public Connection GetDatabaseConnection_new(){
+    public Connection GetDatabaseConnection(){
         return databaseConnection;
     }
 
@@ -31,7 +32,7 @@ public class FrameSuperClass extends JFrame {
             preparedStatement = databaseConnection.prepareStatement(query);
 
             for (int i = 1; i <= inputs.size(); i++) {
-                preparedStatement.setString(1, inputs.get(i - 1));
+                preparedStatement.setString(i, inputs.get(i - 1));
             }
 
         } catch (SQLException ex) {
@@ -55,5 +56,34 @@ public class FrameSuperClass extends JFrame {
         } else {
             JOptionPane.showMessageDialog(null, invalidMessage);
         }
+    }
+
+    public DefaultTableModel FillSQLDataIntoTable(PreparedStatement preparedStatement){
+        DefaultTableModel tableModel;
+        try {
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            ResultSetMetaData metaData = resultSet.getMetaData();
+            int columnCount = metaData.getColumnCount();
+
+            tableModel=new DefaultTableModel();
+            // Add column's labels to the table model
+            for (int i = 1; i <= columnCount; i++) {
+                tableModel.addColumn(metaData.getColumnLabel(i));
+            }
+
+            //Fill sql data into table
+            while (resultSet.next()) {
+                Object[] row = new Object[columnCount];
+                for (int i = 1; i <= columnCount; i++) {
+                    row[i - 1] = resultSet.getObject(i);
+                }
+                tableModel.addRow(row);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return tableModel;
     }
 }
