@@ -40,13 +40,8 @@ public class LocationFunctionsFrame extends FrameSuperClass{
 
     public LocationFunctionsFrame(String username){
         SetupDatabaseConnection();
+        DefaultJFrameSetup(this,mainPanel,900,600,"FavoriteSites Location Frame",3);
         this.username = username;
-
-        add(mainPanel);
-        setSize(900,600);
-        setTitle("FavoriteSites Main Frame");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setVisible(true);
 
         deleteVisitRButton.setEnabled(false);
         updateVisitRButton.setEnabled(false);
@@ -117,10 +112,7 @@ public class LocationFunctionsFrame extends FrameSuperClass{
     private void DisplayVisitFunctionality() throws SQLException {
         String query = "SELECT * FROM visits WHERE visitid=?";
 
-        List<String> inputs=new ArrayList<>();
-        inputs.add(visitidComboBox.getSelectedItem().toString());
-
-        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
+        PreparedStatement preparedStatement = FillQueryWithAnInput(query,visitidComboBox.getSelectedItem().toString());
 
         DefaultTableModel tableModel = FillSQLDataIntoTable(preparedStatement);
 
@@ -253,12 +245,9 @@ public class LocationFunctionsFrame extends FrameSuperClass{
         visitidComboBox.removeAllItems();
         visitidComboBox.addItem("Not Selected");
 
-
         String query = "SELECT visitid FROM visits WHERE username=?;";
-        List<String> inputs=new ArrayList<String>();
-        inputs.add(username);
         try {
-            ResultSet resultSet=FillQueryWithInputs(query,inputs).executeQuery();
+            ResultSet resultSet=FillQueryWithAnInput(query,username).executeQuery();
             while (resultSet.next()) {
                 visitidComboBox.addItem(resultSet.getObject(1));
             }

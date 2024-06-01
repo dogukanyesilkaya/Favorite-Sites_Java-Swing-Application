@@ -18,12 +18,7 @@ public class LoginFrame extends FrameSuperClass{
 
     public LoginFrame() throws SQLException{
         SetupDatabaseConnection();
-
-        add(mainPanel);
-        setSize(400,400);
-        setTitle("FavoriteSites Login Frame");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setVisible(true);
+        DefaultJFrameSetup(this,mainPanel,400,400,"FavoriteSites Login Frame",3);
 
         registerButton.setEnabled(false);
 

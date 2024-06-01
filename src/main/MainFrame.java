@@ -44,14 +44,14 @@ public class MainFrame extends FrameSuperClass{
         displayFunctionsButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                DisplayFunctionsFrame displayFunctionsFrame = new DisplayFunctionsFrame(GetDatabaseConnection(),username);
+                DisplayFunctionsFrame displayFunctionsFrame = new DisplayFunctionsFrame(username);
             }
         });
 
         shareFrameButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                ShareFunctionsFrame shareFunctionsFrame = new ShareFunctionsFrame(GetDatabaseConnection(),username);
+                ShareFunctionsFrame shareFunctionsFrame = new ShareFunctionsFrame(username);
             }
         });
 

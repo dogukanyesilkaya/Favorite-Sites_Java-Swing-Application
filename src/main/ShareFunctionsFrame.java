@@ -1,14 +1,17 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class ShareFunctionsFrame extends JFrame {
+public class ShareFunctionsFrame extends FrameSuperClass {
     private JRadioButton shareVisitIDRButton;
     private JRadioButton showSharedVisitsRButton;
     private JTextField friendsUsernameTField;
-    private JTextField visitidTField;
+    private JComboBox visitidComboBox;
     private JTextArea visitsTArea;
     private JButton executeButton;
     private JLabel friendUsernameLabel;
@@ -16,27 +19,21 @@ public class ShareFunctionsFrame extends JFrame {
     private JLabel visitsLabel;
     private JPanel mainPanel;
     private JButton backButton;
-
-    Connection databaseConnection;
     String username;
 
     ButtonGroup buttonGroup = new ButtonGroup();
-    public ShareFunctionsFrame(Connection connection, String username){
-        databaseConnection = connection;
+    public ShareFunctionsFrame(String username){
+        SetupDatabaseConnection();
+        DefaultJFrameSetup(this,mainPanel,900,600,"FavoriteSites Share Functions Frame",3);
         this.username = username;
 
-        add(mainPanel);
-        setSize(900,600);
-        setTitle("FavoriteSites Share Frame");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setVisible(true);
+        visitsTArea.setFont(new Font("Arial", Font.PLAIN, 14));
 
-        friendsUsernameTField.setEditable(false);
-        visitidTField.setEditable(false);
-        executeButton.setEnabled(false);
-        visitsTArea.setEnabled(false);
 
         SetupSelectionRadioButtons();
+        SetupVisitIdComboBox();
+
+        HandleFieldSelectionLogic();
 
         backButton.addActionListener(new ActionListener() {
             @Override
@@ -49,9 +46,7 @@ public class ShareFunctionsFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 HandleFieldSelectionLogic();
-                ShowUserVisits();
-                visitsLabel.setText(username+"'s visits (Country Name | City Name | Year Visited | Season Visited | " +
-                        "Best Feature | Comment | Rating | Username | Visit ID)");
+
             }
         });
 
@@ -59,26 +54,19 @@ public class ShareFunctionsFrame extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 HandleFieldSelectionLogic();
-                visitsTArea.setText("");
-                friendsUsernameTField.setText("");
-                visitidTField.setText("");
-                visitsTArea.setText("");
-                visitsLabel.setText("Visits shared with "+username+" (Username Of Sharer| Visit ID | Country Name | City Name | Year Visited | Season Visited | " +
-                        "Best Feature | Comment | Rating)");
+
             }
         });
 
         executeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                visitsTArea.setText("");
+
                 String selection = buttonGroup.getSelection().getActionCommand();
                 switch (selection){
                     case "shareVisit":
-                        if(CheckVisitID()){
-                            ShareVisitFunctionality();
-                        }else{
-                            JOptionPane.showMessageDialog(null, "Please enter a valid Visit ID");
-                        }
+                        ShareVisitFunctionality();
                         break;
                     case "showVisits":
                         ShowVisitsFunctionality();
@@ -91,128 +79,57 @@ public class ShareFunctionsFrame extends JFrame {
     private void ShowUserVisits(){
 
         String query = "SELECT * FROM visits WHERE username=?";
-        try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1, username);
-            ResultSet resultSet = preparedStatement.executeQuery();
 
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            int columnCount = metaData.getColumnCount();
-
-            DefaultTableModel tableModel=new DefaultTableModel();
-            for (int i = 1; i <= columnCount; i++) {
-                String columnLabel=metaData.getColumnLabel(i);
-                tableModel.addColumn(columnLabel);
-            }
-
-            while (resultSet.next()) {
-                Object[] row = new Object[columnCount];
-                for (int i = 1; i <= columnCount; i++) {
-                    row[i - 1] = resultSet.getObject(i);
+        PreparedStatement preparedStatement=FillQueryWithAnInput(query,username);
+        DefaultTableModel tableModel=FillSQLDataIntoTable(preparedStatement);
+        int rowCount = tableModel.getRowCount();
+        if(rowCount != 0){
+            for (int r = 0; r < rowCount; r++) {
+                String visitInfo="";
+                for (int c = 0; c < tableModel.getColumnCount(); c++) {
+                    visitInfo+=tableModel.getValueAt(r,c).toString()+" | ";
                 }
-                tableModel.addRow(row);
+                addTextToDisplayArea(visitInfo);
             }
-            int rowCount = tableModel.getRowCount();
-            if(rowCount != 0){
-                for (int r = 0; r < rowCount; r++) {
-                    String visitInfo="";
-                    for (int c = 0; c < columnCount; c++) {
-                        visitInfo+=tableModel.getValueAt(r,c).toString()+" | ";
-                    }
-                    addTextToDisplayArea(visitInfo);
-                }
-            }else{
-                JOptionPane.showMessageDialog(null, "There was an error!");
-            }
-        }catch (SQLException sqlException){
-            sqlException.printStackTrace();
-        }
-    }
-    private boolean CheckVisitID(){
-        String visitID =visitidTField.getText();
-        if(visitID == ""){
-            return false;
+        }else{
+            JOptionPane.showMessageDialog(null, "There was an error!");
         }
 
-        String query = "SELECT * FROM visits WHERE visitid=?";
-        try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1,visitID);
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            if(resultSet.next()){
-                return true;
-            }else{
-                return false;
-            }
-
-        }catch (SQLException sqlException){
-            sqlException.printStackTrace();
-        }
-        return false;
     }
 
     private void ShowVisitsFunctionality(){
 
-
         String query = "SELECT sharingUsername,sv.visitid,countryName,cityName,yearVisited,seasonVisited,bestFeature,comment,rating " +
                         "FROM sharedvisits sv JOIN visits v ON v.username = sv.sharingUsername AND " +
                         "v.visitid = sv.visitid WHERE sv.username = ?";
-        try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1, username);
-            ResultSet resultSet = preparedStatement.executeQuery();
 
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            int columnCount = metaData.getColumnCount();
+        PreparedStatement preparedStatement=FillQueryWithAnInput(query,username);
+        DefaultTableModel tableModel = FillSQLDataIntoTable(preparedStatement);
 
-            DefaultTableModel tableModel=new DefaultTableModel();
-            for (int i = 1; i <= columnCount; i++) {
-                tableModel.addColumn(metaData.getColumnLabel(i));
-            }
-
-            while (resultSet.next()) {
-                Object[] row = new Object[columnCount];
-                for (int i = 1; i <= columnCount; i++) {
-                    row[i - 1] = resultSet.getObject(i);
+        int rowCount = tableModel.getRowCount();
+        if(rowCount != 0){
+            for (int r = 0; r < rowCount; r++) {
+                String visitInfo="";
+                for (int c = 0; c < tableModel.getColumnCount(); c++) {
+                    visitInfo+=tableModel.getValueAt(r,c).toString()+" | ";
                 }
-                tableModel.addRow(row);
+                addTextToDisplayArea(visitInfo);
             }
-            int rowCount = tableModel.getRowCount();
-            if(rowCount != 0){
-                for (int r = 0; r < rowCount; r++) {
-                    String visitInfo="";
-                    for (int c = 0; c < columnCount; c++) {
-                        visitInfo+=tableModel.getValueAt(r,c).toString()+" | ";
-                    }
-                    addTextToDisplayArea(visitInfo);
-                }
-            }else{
-                JOptionPane.showMessageDialog(null, "There was an error!");
-            }
-        }catch (SQLException sqlException){
-            sqlException.printStackTrace();
+        }else{
+            JOptionPane.showMessageDialog(null, "There was an error!");
         }
+
     }
 
     private void ShareVisitFunctionality(){
         String query = "INSERT INTO sharedvisits VALUES(?,?,?)";
-        try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1,visitidTField.getText());
-            preparedStatement.setString(2,friendsUsernameTField.getText());
-            preparedStatement.setString(3,username);
 
-            int addedRow = preparedStatement.executeUpdate();
-            if(addedRow>0){
-                JOptionPane.showMessageDialog(null, "You have successfully shared visit");
-            }else{
-                JOptionPane.showMessageDialog(null, "There was an error!");
-            }
-
-        } catch (SQLException ex) {
-            throw new RuntimeException(ex);
-        }
+        List<String> inputs=new ArrayList<>();
+        inputs.add(visitidComboBox.getSelectedItem().toString());
+        inputs.add(friendsUsernameTField.getText());
+        inputs.add(username);
+        PreparedStatement preparedStatement=FillQueryWithInputs(query,inputs);
+        RunQueryOnce(preparedStatement,"You have successfully shared visit","There was an error!");
     }
 
     private void addTextToDisplayArea(String text){
@@ -228,18 +145,61 @@ public class ShareFunctionsFrame extends JFrame {
         showSharedVisitsRButton.setActionCommand("showVisits");
     }
 
+    private void SetupVisitIdComboBox(){
+        visitidComboBox.removeAllItems();
+        visitidComboBox.addItem("Not Selected");
+
+        String query = "SELECT visitid FROM visits WHERE username=?;";
+
+        try {
+            ResultSet resultSet=FillQueryWithAnInput(query,username).executeQuery();
+            while (resultSet.next()) {
+                visitidComboBox.addItem(resultSet.getObject(1));
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "User doesn't have a recorded location!");
+            ex.printStackTrace();
+        }
+    }
+
+
     private void HandleFieldSelectionLogic(){
-        String selection = buttonGroup.getSelection().getActionCommand();
+        String selection="";
+        if(buttonGroup.getSelection() != null){
+            selection = buttonGroup.getSelection().getActionCommand();
+        }
+
+        visitsTArea.setEnabled(false);
+
         switch (selection){
+            case "":
+                friendsUsernameTField.setEditable(false);
+                visitidComboBox.setEnabled(false);
+                executeButton.setEnabled(false);
+
+                visitsLabel.setText("Display Screen");
+                break;
+
             case "shareVisit":
                 friendsUsernameTField.setEditable(true);
-                visitidTField.setEditable(true);
+                visitidComboBox.setEnabled(true);
                 executeButton.setEnabled(true);
+
+                visitsTArea.setText("");
+                ShowUserVisits();
+                visitsLabel.setText(username+"'s visits (Country Name | City Name | Year Visited | Season Visited | " +
+                        "Best Feature | Comment | Rating | Username | Visit ID)");
                 break;
             case "showVisits":
                 friendsUsernameTField.setEditable(false);
-                visitidTField.setEditable(false);
+                visitidComboBox.setEnabled(false);
                 executeButton.setEnabled(true);
+
+                visitsTArea.setText("");
+                friendsUsernameTField.setText("");
+                visitidComboBox.setSelectedItem("Not Selected");
+                visitsLabel.setText("Visits shared with "+username+" (Username Of Sharer| Visit ID | Country Name | City Name | Year Visited | Season Visited | " +
+                        "Best Feature | Comment | Rating)");
                 break;
         }
     }

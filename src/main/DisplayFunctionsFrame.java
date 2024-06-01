@@ -1,10 +1,13 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class DisplayFunctionsFrame extends JFrame{
+public class DisplayFunctionsFrame extends FrameSuperClass{
     private JPanel mainPanel;
     private JTextArea displayTArea;
     private JLabel displayField;
@@ -12,7 +15,7 @@ public class DisplayFunctionsFrame extends JFrame{
     private JButton displayVisitsOfYearButton;
     private JButton bestFeatureOfFoodButton;
     private JLabel visitidLabel;
-    private JTextField visitidTField;
+    private JComboBox visitidComboBox;
     private JTextField yearTField;
     private JLabel yearLabel;
     private JButton mostVisitedButton;
@@ -20,11 +23,12 @@ public class DisplayFunctionsFrame extends JFrame{
     private JPanel rightPanel;
     private JButton backButton;
 
-    Connection databaseConnection;
     String username;
 
-    public DisplayFunctionsFrame(Connection connection, String username) {  // PS: display visit displays any visit.Should only display visits made by user
-        databaseConnection = connection;
+    public DisplayFunctionsFrame(String username) {
+        displayTArea.setFont(new Font("Arial", Font.PLAIN, 14));
+
+        SetupDatabaseConnection();
         this.username = username;
 
         add(mainPanel);
@@ -33,6 +37,9 @@ public class DisplayFunctionsFrame extends JFrame{
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setVisible(true);
 
+        DefaultJFrameSetup(this,mainPanel,900,600,"FavoriteSites Display Functions Frame",3);
+
+        UpdateVisitIdComboBox();
 
         backButton.addActionListener(new ActionListener() {
             @Override
@@ -44,7 +51,8 @@ public class DisplayFunctionsFrame extends JFrame{
         displayVisitsOfYearButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                displayField.setText("(Country Name | City Name | Year Visited | Season Visited | Best Feature | Comment | Rating | Username | Visit ID)");
+                displayField.setText("(Country Name | City Name | Season Visited | Best Feature | Comment | Rating | Visit ID)");
+                displayTArea.setText("");
                 DisplayVisitInfoOfYear();
             }
         });
@@ -53,6 +61,7 @@ public class DisplayFunctionsFrame extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 displayField.setText("Display Field");
+                displayTArea.setText("");
                 DisplayCountriesVisitedInSpring();
             }
         });
@@ -61,6 +70,7 @@ public class DisplayFunctionsFrame extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 displayField.setText("Display Field");
+                displayTArea.setText("");
                 DisplayMostVisitedCountry();
             }
         });
@@ -69,6 +79,7 @@ public class DisplayFunctionsFrame extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 displayField.setText("Display Field");
+                displayTArea.setText("");
                 DisplayCountriesWithBestFeatureOfFood();
             }
         });
@@ -77,11 +88,8 @@ public class DisplayFunctionsFrame extends JFrame{
             @Override
             public void actionPerformed(ActionEvent e) {
                 displayField.setText("Display Field");
-                if(CheckVisitID()){
-                    DisplayImageOfGivenVisitID();
-                }else{
-                    JOptionPane.showMessageDialog(null, "Please enter a valid Visit ID");
-                }
+                displayTArea.setText("");
+                DisplayImageOfGivenVisitID();
 
             }
         });
@@ -89,13 +97,17 @@ public class DisplayFunctionsFrame extends JFrame{
     }
 
     private void DisplayImageOfGivenVisitID() {
-        displayTArea.setText("");
 
-        String visitID =visitidTField.getText();
-        JFrame showImageFrame = new JFrame("Image Of Visit ID: "+visitID);
-        showImageFrame.setSize(800, 800);
-        showImageFrame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        showImageFrame.setVisible(true);
+        String visitID = visitidComboBox.getSelectedItem().toString();
+
+        if(visitID == "Not Selected"){
+            return;
+        }
+
+        JFrame showImageFrame = new JFrame();
+        JPanel showImagePanel=new JPanel();
+
+        DefaultJFrameSetup(showImageFrame,showImagePanel,800,800,"Image Of Visit ID: "+visitID,2);
 
 
         ImageIcon location1ImageIcon = new ImageIcon("other/Location1.jpg");
@@ -108,61 +120,40 @@ public class DisplayFunctionsFrame extends JFrame{
         switch (visitID_int % 5){
             case 0:
                 locationImage = new JLabel(location1ImageIcon);
-                showImageFrame.add(locationImage);
+                showImagePanel.add(locationImage);
                 break;
             case 1:
                 locationImage = new JLabel(location2ImageIcon);
-                showImageFrame.add(locationImage);
+                showImagePanel.add(locationImage);
                 break;
             case 2:
                 locationImage = new JLabel(location3ImageIcon);
-                showImageFrame.add(locationImage);
+                showImagePanel.add(locationImage);
                 break;
             case 3:
                 locationImage = new JLabel(location4ImageIcon);
-                showImageFrame.add(locationImage);
+                showImagePanel.add(locationImage);
                 break;
             case 4:
                 locationImage = new JLabel(location5ImageIcon);
-                showImageFrame.add(locationImage);
+                showImagePanel.add(locationImage);
                 break;
         }
 
     }
 
-    private boolean CheckVisitID(){
-        String visitID =visitidTField.getText();
-        if(visitID == ""){
-            return false;
-        }
-
-        String query = "SELECT * FROM visits WHERE visitid=?";
-        try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1,visitID);
-            ResultSet resultSet = preparedStatement.executeQuery();
-
-            if(resultSet.next()){
-                return true;
-            }else{
-                return false;
-            }
-
-        }catch (SQLException sqlException){
-            sqlException.printStackTrace();
-        }
-        return false;
-    }
 
     private void DisplayCountriesWithBestFeatureOfFood(){
-        displayTArea.setText("");
 
-        String query = "SELECT * FROM visits WHERE bestFeature=? ORDER BY rating DESC";
+        String query = "SELECT * FROM visits WHERE username=? AND bestFeature=? ORDER BY rating DESC";
+
+        List<String> inputs=new ArrayList<>();
+        inputs.add(username);
+        inputs.add("Food");
+
+        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
         try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1, "Food");
             ResultSet resultSet = preparedStatement.executeQuery();
-
             if(resultSet.next()){
                 do {
                     String countryName = resultSet.getString("countryName");
@@ -177,15 +168,20 @@ public class DisplayFunctionsFrame extends JFrame{
         }catch (SQLException sqlException){
             sqlException.printStackTrace();
         }
+
     }
 
     private void DisplayCountriesVisitedInSpring(){
-        displayTArea.setText("");
 
-        String query = "SELECT * FROM visits WHERE seasonVisited=?";
+        String query = "SELECT * FROM visits WHERE username=? AND seasonVisited=?";
+
+        List<String> inputs=new ArrayList<>();
+        inputs.add(username);
+        inputs.add("Spring");
+
+        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
         try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1, "Spring");
+
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if(resultSet.next()){
@@ -204,12 +200,12 @@ public class DisplayFunctionsFrame extends JFrame{
     }
 
     private void DisplayMostVisitedCountry(){
-        displayTArea.setText("");
 
-        String query = "SELECT countryName,COUNT(*) as VisitCount FROM visits GROUP BY countryName HAVING VisitCount = " +
+        String query = "SELECT countryName,COUNT(*) as VisitCount FROM visits WHERE username=? GROUP BY countryName HAVING VisitCount = " +
                                                             "(SELECT COUNT(*) FROM visits GROUP BY countryName LIMIT 1)";
+
+        PreparedStatement preparedStatement = FillQueryWithAnInput(query,username);
         try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
             ResultSet resultSet = preparedStatement.executeQuery();
 
             if(resultSet.next()){
@@ -225,47 +221,56 @@ public class DisplayFunctionsFrame extends JFrame{
         }catch (SQLException sqlException){
             sqlException.printStackTrace();
         }
+
+
+
     }
 
     private void DisplayVisitInfoOfYear(){
-        displayTArea.setText("");
 
-        String query = "SELECT * FROM visits WHERE yearVisited=?";
-        try {
-            PreparedStatement preparedStatement = databaseConnection.prepareStatement(query);
-            preparedStatement.setString(1, yearTField.getText());
-            ResultSet resultSet = preparedStatement.executeQuery();
+        String query = "SELECT countryName,cityName,seasonVisited,bestFeature,comment,rating,visitid FROM visits WHERE username=? AND yearVisited=?";
 
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            int columnCount = metaData.getColumnCount();
+        List<String> inputs=new ArrayList<>();
+        inputs.add(username);
+        inputs.add(yearTField.getText());
 
-            DefaultTableModel tableModel=new DefaultTableModel();
-            for (int i = 1; i <= columnCount; i++) {
-                String columnLabel=metaData.getColumnLabel(i);
-                tableModel.addColumn(columnLabel);
-            }
+        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
+        DefaultTableModel tableModel = FillSQLDataIntoTable(preparedStatement);
 
-            while (resultSet.next()) {
-                Object[] row = new Object[columnCount];
-                for (int i = 1; i <= columnCount; i++) {
-                    row[i - 1] = resultSet.getObject(i);
-                }
-                tableModel.addRow(row);
-            }
-            int rowCount = tableModel.getRowCount();
-            if(rowCount != 0){
-                for (int r = 0; r < rowCount; r++) {
-                    String visitInfo="";
-                    for (int c = 0; c < columnCount; c++) {
+        int rowCount = tableModel.getRowCount();
+        if(rowCount != 0){
+            for (int r = 0; r < rowCount; r++) {
+                String visitInfo="";
+                for (int c = 0; c < tableModel.getColumnCount(); c++) {
+                    if(c==5){ //for formatting rating column
+                        visitInfo+=tableModel.getValueAt(r,c).toString()+"/5 | ";
+                    }else{
                         visitInfo+=tableModel.getValueAt(r,c).toString()+" | ";
                     }
-                    addTextToDisplayArea(visitInfo);
+
                 }
-            }else{
-                JOptionPane.showMessageDialog(null, "There was an error!");
+                addTextToDisplayArea(visitInfo);
             }
-        }catch (SQLException sqlException){
-            sqlException.printStackTrace();
+        }else{
+            JOptionPane.showMessageDialog(null, "There was an error!");
+        }
+
+    }
+
+    private void UpdateVisitIdComboBox(){
+        visitidComboBox.removeAllItems();
+        visitidComboBox.addItem("Not Selected");
+
+        String query = "SELECT visitid FROM visits WHERE username=?;";
+
+        try {
+            ResultSet resultSet=FillQueryWithAnInput(query,username).executeQuery();
+            while (resultSet.next()) {
+                visitidComboBox.addItem(resultSet.getObject(1));
+            }
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(null, "User doesn't have a recorded location!");
+            ex.printStackTrace();
         }
     }
 

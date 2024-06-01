@@ -9,6 +9,7 @@ public class FrameSuperClass extends JFrame {
 
 
     public void SetupDatabaseConnection() {
+
         try {
 
             String connectionURL = "jdbc:mysql://localhost:3306/favoritesites?useSSL=false&allowPublicKeyRetrieval=true";
@@ -24,6 +25,28 @@ public class FrameSuperClass extends JFrame {
 
     public Connection GetDatabaseConnection(){
         return databaseConnection;
+    }
+
+    public void DefaultJFrameSetup(JFrame jFrame,JPanel mainPanel,int width,int height,String frameTitle,int closeOperationIndex){
+        jFrame.add(mainPanel);
+        jFrame.setSize(width,height);
+        jFrame.setTitle(frameTitle);
+        jFrame.setDefaultCloseOperation(closeOperationIndex); //EXIT_ON_CLOSE=3 || DISPOSE_ON_CLOSE=2
+        jFrame.setVisible(true);
+    }
+
+    public PreparedStatement FillQueryWithAnInput(String query, String input){
+        PreparedStatement preparedStatement;
+        try {
+            preparedStatement = databaseConnection.prepareStatement(query);
+
+            preparedStatement.setString(1, input);
+
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+        return preparedStatement;
+
     }
 
     public PreparedStatement FillQueryWithInputs(String query, List<String> inputs){
