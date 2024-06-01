@@ -24,10 +24,10 @@ public class ShareFunctionsFrame extends FrameSuperClass {
     ButtonGroup buttonGroup = new ButtonGroup();
     public ShareFunctionsFrame(String username){
         SetupDatabaseConnection();
-        DefaultJFrameSetup(this,mainPanel,900,600,"FavoriteSites Share Functions Frame",3);
+        DefaultJFrameSetup(this,mainPanel,1200,600,"FavoriteSites Share Functions Frame",3);
         this.username = username;
 
-        visitsTArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        visitsTArea.setFont(new Font("Arial", Font.PLAIN, 16));
 
 
         SetupSelectionRadioButtons();
@@ -111,7 +111,11 @@ public class ShareFunctionsFrame extends FrameSuperClass {
             for (int r = 0; r < rowCount; r++) {
                 String visitInfo="";
                 for (int c = 0; c < tableModel.getColumnCount(); c++) {
-                    visitInfo+=tableModel.getValueAt(r,c).toString()+" | ";
+                    if(c==8){ //for formatting rating column
+                        visitInfo+=tableModel.getValueAt(r,c).toString()+"/5 | ";
+                    }else{
+                        visitInfo+=tableModel.getValueAt(r,c).toString()+" | ";
+                    }
                 }
                 addTextToDisplayArea(visitInfo);
             }
@@ -129,8 +133,9 @@ public class ShareFunctionsFrame extends FrameSuperClass {
             JOptionPane.showMessageDialog(null, "Please fill the blanks!");
             return;
         }
-        String checkVisitQuery = "SELECT * FROM sharedvisits WHERE sharingUsername=? AND visitid=?";
+        String checkVisitQuery = "SELECT * FROM sharedvisits WHERE username=? AND sharingUsername=? AND visitid=?";
         List<String> inputs1=new ArrayList<>();
+        inputs1.add(friendsUsername);
         inputs1.add(username);
         inputs1.add(visitid);
         PreparedStatement preparedStatement1 =  FillQueryWithInputs(checkVisitQuery,inputs1);
@@ -145,7 +150,7 @@ public class ShareFunctionsFrame extends FrameSuperClass {
         }
 
 
-        String query = "INSERT INTO sharedvisits VALUES(?,?,?)";
+        String query = "INSERT INTO sharedvisits(visitid,username,sharingUsername) VALUES(?,?,?)";
         List<String> inputs2=new ArrayList<>();
         inputs2.add(visitid);
         inputs2.add(friendsUsername);
@@ -191,7 +196,7 @@ public class ShareFunctionsFrame extends FrameSuperClass {
             selection = buttonGroup.getSelection().getActionCommand();
         }
 
-        visitsTArea.setEnabled(false);
+        visitsTArea.setEditable(false);
 
         switch (selection){
             case "":

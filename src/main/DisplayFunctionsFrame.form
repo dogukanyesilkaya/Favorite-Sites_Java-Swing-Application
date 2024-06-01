@@ -3,7 +3,7 @@
   <grid id="27dc6" binding="mainPanel" layout-manager="GridLayoutManager" row-count="1" column-count="2" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">
     <margin top="0" left="0" bottom="0" right="0"/>
     <constraints>
-      <xy x="20" y="20" width="653" height="408"/>
+      <xy x="20" y="20" width="708" height="428"/>
     </constraints>
     <properties/>
     <border type="none"/>
@@ -13,7 +13,9 @@
         <constraints>
           <grid row="0" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
+        <properties>
+          <background color="-5983535"/>
+        </properties>
         <border type="none"/>
         <children>
           <component id="2a093" class="javax.swing.JLabel" binding="displayField">
@@ -40,6 +42,7 @@
               <component id="791e" class="javax.swing.JTextArea" binding="displayTArea">
                 <constraints/>
                 <properties>
+                  <background color="-3549194"/>
                   <columns value="0"/>
                   <enabled value="false"/>
                   <text value=""/>
@@ -64,7 +67,9 @@
         <constraints>
           <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="3" hsize-policy="3" anchor="0" fill="3" indent="0" use-parent-layout="false"/>
         </constraints>
-        <properties/>
+        <properties>
+          <background color="-6904637"/>
+        </properties>
         <border type="none"/>
         <children>
           <component id="f093b" class="javax.swing.JLabel" binding="visitidLabel">
@@ -150,13 +155,6 @@
               <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
             </constraints>
           </vspacer>
-          <vspacer id="ffee1">
-            <constraints>
-              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false">
-                <preferred-size width="11" height="35"/>
-              </grid>
-            </constraints>
-          </vspacer>
           <vspacer id="2dd45">
             <constraints>
               <grid row="11" column="0" row-span="1" col-span="1" vsize-policy="6" hsize-policy="1" anchor="0" fill="2" indent="0" use-parent-layout="false"/>
@@ -167,7 +165,18 @@
               <grid row="12" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
+              <background color="-2004888"/>
               <text value="Go Back"/>
+            </properties>
+          </component>
+          <component id="271d" class="javax.swing.JCheckBox" binding="sharedVisitsCheckBox">
+            <constraints>
+              <grid row="0" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="3" anchor="0" fill="0" indent="0" use-parent-layout="false"/>
+            </constraints>
+            <properties>
+              <horizontalAlignment value="0"/>
+              <horizontalTextPosition value="4"/>
+              <text value="Shared Visits"/>
             </properties>
           </component>
         </children>

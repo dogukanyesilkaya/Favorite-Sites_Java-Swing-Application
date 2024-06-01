@@ -1,5 +1,6 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import java.awt.*;
 import java.sql.*;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class FrameSuperClass extends JFrame {
         return databaseConnection;
     }
 
-    public void DefaultJFrameSetup(JFrame jFrame,JPanel mainPanel,int width,int height,String frameTitle,int closeOperationIndex){
+    public void DefaultJFrameSetup(JFrame jFrame, JPanel mainPanel, int width, int height, String frameTitle, int closeOperationIndex){
         jFrame.add(mainPanel);
         jFrame.setSize(width,height);
         jFrame.setTitle(frameTitle);

@@ -22,29 +22,50 @@ public class DisplayFunctionsFrame extends FrameSuperClass{
     private JButton visitedInSpringButton;
     private JPanel rightPanel;
     private JButton backButton;
+    private JCheckBox sharedVisitsCheckBox;
 
     String username;
 
     public DisplayFunctionsFrame(String username) {
         displayTArea.setFont(new Font("Arial", Font.PLAIN, 14));
+        displayTArea.setEnabled(true);
+        displayTArea.setEditable(false);
 
         SetupDatabaseConnection();
         this.username = username;
 
-        add(mainPanel);
-        setSize(900, 600);
-        setTitle("FavoriteSites Display Functions Frame");
-        setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setVisible(true);
-
         DefaultJFrameSetup(this,mainPanel,900,600,"FavoriteSites Display Functions Frame",3);
 
-        UpdateVisitIdComboBox(true);
+        UpdateVisitIdComboBox(false);
+
 
         backButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 dispose();
+            }
+        });
+
+        sharedVisitsCheckBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if(sharedVisitsCheckBox.isSelected()){
+                    UpdateVisitIdComboBox(true);
+
+                    yearTField.setEnabled(false);
+                    displayVisitsOfYearButton.setEnabled(false);
+                    bestFeatureOfFoodButton.setEnabled(false);
+                    mostVisitedButton.setEnabled(false);
+                    visitedInSpringButton.setEnabled(false);
+                }else{
+                    UpdateVisitIdComboBox(false);
+
+                    yearTField.setEnabled(true);
+                    displayVisitsOfYearButton.setEnabled(true);
+                    bestFeatureOfFoodButton.setEnabled(true);
+                    mostVisitedButton.setEnabled(true);
+                    visitedInSpringButton.setEnabled(true);
+                }
             }
         });
 

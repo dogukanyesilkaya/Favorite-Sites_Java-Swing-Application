@@ -1,7 +1,6 @@
 import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.Connection;
 import java.sql.SQLException;
 
 public class MainFrame extends FrameSuperClass{
@@ -10,7 +9,7 @@ public class MainFrame extends FrameSuperClass{
     private JButton displayFunctionsButton;
     private JButton locationFunctionsButton;
     private JButton shareFrameButton;
-    private JButton backButton;
+    private JButton logoutButton;
 
 
     public MainFrame(String username){
@@ -22,7 +21,7 @@ public class MainFrame extends FrameSuperClass{
 
         usernameDisplay.setText("Welcome "+username+" !!");
 
-        backButton.addActionListener(new ActionListener() {
+        logoutButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 dispose();
