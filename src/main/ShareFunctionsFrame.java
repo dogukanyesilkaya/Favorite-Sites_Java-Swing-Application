@@ -122,14 +122,36 @@ public class ShareFunctionsFrame extends FrameSuperClass {
     }
 
     private void ShareVisitFunctionality(){
-        String query = "INSERT INTO sharedvisits VALUES(?,?,?)";
+        String visitid = visitidComboBox.getSelectedItem().toString();
+        String friendsUsername = friendsUsernameTField.getText();
 
-        List<String> inputs=new ArrayList<>();
-        inputs.add(visitidComboBox.getSelectedItem().toString());
-        inputs.add(friendsUsernameTField.getText());
-        inputs.add(username);
-        PreparedStatement preparedStatement=FillQueryWithInputs(query,inputs);
-        RunQueryOnce(preparedStatement,"You have successfully shared visit","There was an error!");
+        if(friendsUsername == null || visitid == "Not Selected"){
+            JOptionPane.showMessageDialog(null, "Please fill the blanks!");
+            return;
+        }
+        String checkVisitQuery = "SELECT * FROM sharedvisits WHERE sharingUsername=? AND visitid=?";
+        List<String> inputs1=new ArrayList<>();
+        inputs1.add(username);
+        inputs1.add(visitid);
+        PreparedStatement preparedStatement1 =  FillQueryWithInputs(checkVisitQuery,inputs1);
+        try {
+            ResultSet resultSet=preparedStatement1.executeQuery();
+            if(resultSet.next()){
+                JOptionPane.showMessageDialog(null, "This visit is already shared!.Please try another visit");
+                return;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+
+        String query = "INSERT INTO sharedvisits VALUES(?,?,?)";
+        List<String> inputs2=new ArrayList<>();
+        inputs2.add(visitid);
+        inputs2.add(friendsUsername);
+        inputs2.add(username);
+        PreparedStatement preparedStatement2=FillQueryWithInputs(query,inputs2);
+        RunQueryOnce(preparedStatement2,"You have successfully shared visit","There was an error!");
     }
 
     private void addTextToDisplayArea(String text){

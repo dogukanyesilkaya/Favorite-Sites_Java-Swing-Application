@@ -39,7 +39,7 @@ public class DisplayFunctionsFrame extends FrameSuperClass{
 
         DefaultJFrameSetup(this,mainPanel,900,600,"FavoriteSites Display Functions Frame",3);
 
-        UpdateVisitIdComboBox();
+        UpdateVisitIdComboBox(true);
 
         backButton.addActionListener(new ActionListener() {
             @Override
@@ -201,9 +201,17 @@ public class DisplayFunctionsFrame extends FrameSuperClass{
 
     private void DisplayMostVisitedCountry(){
 
-        String query = "SELECT countryName,COUNT(*) as VisitCount FROM visits WHERE username=? GROUP BY countryName HAVING VisitCount = " +
-                                                            "(SELECT COUNT(*) FROM visits GROUP BY countryName LIMIT 1)";
+        String DropViewIfExists="DROP VIEW IF EXISTS CountryVisitCount";
 
+        String CountryVisitCountViewTable = "CREATE VIEW CountryVisitCount AS " +
+                                            "SELECT COUNT(*) as VisitCount FROM visits GROUP BY countryName";
+
+
+        String query = "SELECT countryName,COUNT(*) as VisitCount FROM visits WHERE username=? GROUP BY countryName HAVING VisitCount = " +
+                                                            "(SELECT MAX(VisitCount) FROM CountryVisitCount)";
+
+        RunQueryWithoutInput(DropViewIfExists);
+        RunQueryWithoutInput(CountryVisitCountViewTable);
         PreparedStatement preparedStatement = FillQueryWithAnInput(query,username);
         try {
             ResultSet resultSet = preparedStatement.executeQuery();
@@ -257,22 +265,33 @@ public class DisplayFunctionsFrame extends FrameSuperClass{
 
     }
 
-    private void UpdateVisitIdComboBox(){
+    private void UpdateVisitIdComboBox(boolean isSharedVisitsIncluded){
         visitidComboBox.removeAllItems();
         visitidComboBox.addItem("Not Selected");
 
-        String query = "SELECT visitid FROM visits WHERE username=?;";
-
+        String query1 = "SELECT visitid FROM visits WHERE username=?;";
         try {
-            ResultSet resultSet=FillQueryWithAnInput(query,username).executeQuery();
-            while (resultSet.next()) {
-                visitidComboBox.addItem(resultSet.getObject(1));
+            ResultSet resultSet1=FillQueryWithAnInput(query1,username).executeQuery();
+            while (resultSet1.next()) {
+                visitidComboBox.addItem(resultSet1.getObject(1));
+
             }
+
+            if(isSharedVisitsIncluded){
+                String query2 = "SELECT visitid  FROM sharedvisits WHERE username=?";
+                ResultSet resultSet2=FillQueryWithAnInput(query2,username).executeQuery();
+                while (resultSet2.next()) {
+                    visitidComboBox.addItem(resultSet2.getObject(1));
+                }
+            }
+
         } catch (SQLException ex) {
             JOptionPane.showMessageDialog(null, "User doesn't have a recorded location!");
             ex.printStackTrace();
         }
     }
+
+
 
     private void addTextToDisplayArea(String text){
         displayTArea.append(text+"\n");

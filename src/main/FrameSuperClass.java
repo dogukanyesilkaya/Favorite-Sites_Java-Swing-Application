@@ -35,6 +35,16 @@ public class FrameSuperClass extends JFrame {
         jFrame.setVisible(true);
     }
 
+    public void RunQueryWithoutInput(String query){
+        try {
+            Statement statement = databaseConnection.createStatement();
+            statement.executeUpdate(query);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
     public PreparedStatement FillQueryWithAnInput(String query, String input){
         PreparedStatement preparedStatement;
         try {
