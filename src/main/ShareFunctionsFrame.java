@@ -127,9 +127,10 @@ public class ShareFunctionsFrame extends FrameSuperClass {
 
     private void ShareVisitFunctionality(){
         String visitid = visitidComboBox.getSelectedItem().toString();
-        String friendsUsername = friendsUsernameTField.getText();
+        String friendsUsername = "";
+        friendsUsername = friendsUsernameTField.getText();
 
-        if(friendsUsername == null || visitid == "Not Selected"){
+        if(!CheckUsernameValidity(friendsUsername) || visitid == "Not Selected"){
             JOptionPane.showMessageDialog(null, "Please fill the blanks!");
             return;
         }

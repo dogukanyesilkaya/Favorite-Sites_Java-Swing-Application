@@ -120,4 +120,34 @@ public class FrameSuperClass extends JFrame {
 
         return tableModel;
     }
+
+    public boolean CheckEmptyInputs(List<String> inputs){
+        for (String input:inputs){
+            if(input.isEmpty()){
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public boolean CheckUsernameValidity(String username){
+        String query="SELECT * FROM userinfo WHERE username=?";
+        PreparedStatement preparedStatement = FillQueryWithAnInput(query,username);
+
+        try {
+            ResultSet resultSet= preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                return true;
+            } else {
+                JOptionPane.showMessageDialog(null, "Please enter a valid username");
+                return false;
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+
 }

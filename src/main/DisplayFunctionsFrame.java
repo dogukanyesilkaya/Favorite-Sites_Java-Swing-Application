@@ -31,13 +31,14 @@ public class DisplayFunctionsFrame extends FrameSuperClass{
         displayTArea.setEnabled(true);
         displayTArea.setEditable(false);
 
+        DefaultJFrameSetup(this,mainPanel,900,600,"FavoriteSites Display Functions Frame",3);
+
         SetupDatabaseConnection();
         this.username = username;
 
-        DefaultJFrameSetup(this,mainPanel,900,600,"FavoriteSites Display Functions Frame",3);
+
 
         UpdateVisitIdComboBox(false);
-
 
         backButton.addActionListener(new ActionListener() {
             @Override
@@ -194,7 +195,7 @@ public class DisplayFunctionsFrame extends FrameSuperClass{
 
     private void DisplayCountriesVisitedInSpring(){
 
-        String query = "SELECT * FROM visits WHERE username=? AND seasonVisited=?";
+        String query = "SELECT DISTINCT(countryName) FROM visits WHERE username=? AND seasonVisited=?";
 
         List<String> inputs=new ArrayList<>();
         inputs.add(username);

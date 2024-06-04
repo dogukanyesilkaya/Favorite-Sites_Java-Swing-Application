@@ -40,12 +40,11 @@ public class LocationFunctionsFrame extends FrameSuperClass{
 
 
     public LocationFunctionsFrame(String username){
-        SetupDatabaseConnection();
         DefaultJFrameSetup(this,mainPanel,900,600,"FavoriteSites Location Frame",3);
+
+        SetupDatabaseConnection();
         this.username = username;
 
-        deleteVisitRButton.setEnabled(false);
-        updateVisitRButton.setEnabled(false);
 
         SetupFunctionRadioButtons();
         SetupFeatureComboBox();
@@ -53,6 +52,9 @@ public class LocationFunctionsFrame extends FrameSuperClass{
         UpdateVisitIdComboBox();
 
         HandleFieldSelectionLogic();
+
+        deleteVisitRButton.setEnabled(false);
+        updateVisitRButton.setEnabled(false);
 
         backButton.addActionListener(new ActionListener() {
             @Override
@@ -106,8 +108,15 @@ public class LocationFunctionsFrame extends FrameSuperClass{
         inputs.add(commentTField.getText());
         inputs.add(""+ratingSlider.getValue());
         inputs.add(username);
-        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
-        RunQueryOnce(preparedStatement,"You have successfully added location","There was a error!");
+        if(!CheckEmptyInputs(inputs)){
+            JOptionPane.showMessageDialog(null, "Please fill all the fields!");
+            return;
+        }else{
+            PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
+            RunQueryOnce(preparedStatement,"You have successfully added location","");
+        }
+
+
     }
 
     private void DisplayVisitFunctionality() throws SQLException {
@@ -122,24 +131,32 @@ public class LocationFunctionsFrame extends FrameSuperClass{
             cityNameTField.setText(tableModel.getValueAt(0,1).toString());
             yearTField.setText(tableModel.getValueAt(0,2).toString());
             seasonComboBox.setSelectedItem(tableModel.getValueAt(0,3).toString());
-            featureComboBox.setSelectedItem(tableModel.getValueAt(0,4).toString().toString());
+            featureComboBox.setSelectedItem(tableModel.getValueAt(0,4).toString());
             commentTField.setText(tableModel.getValueAt(0,5).toString());
-            ratingSlider.setValue(Integer.parseInt(tableModel.getValueAt(0,6).toString().toString()));
+            ratingSlider.setValue(Integer.parseInt(tableModel.getValueAt(0,6).toString()));
         }else{
             JOptionPane.showMessageDialog(null, "Please select a valid visit ID");
         }
     }
 
     private void DeleteVisitFunctionality(){
+        String visitid = visitidComboBox.getSelectedItem().toString();
+
         String query = "DELETE FROM visits WHERE username=? AND visitid=?";
 
         List<String> inputs=new ArrayList<String>();
         inputs.add(username);
-        inputs.add(visitidComboBox.getSelectedItem().toString());
+        inputs.add(visitid);
 
-        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
+        if(visitid == "Not Selected"){
+            JOptionPane.showMessageDialog(null, "Please select a valid visit ID");
+            return;
+        }else{
+            PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
 
-        RunQueryOnce(preparedStatement,"You have successfully removed visit","Please select a valid visit ID");
+            RunQueryOnce(preparedStatement,"You have successfully removed visit","");
+        }
+
     }
 
     private void UpdateVisitFunctionality() throws SQLException {
@@ -156,9 +173,14 @@ public class LocationFunctionsFrame extends FrameSuperClass{
         inputs.add(""+ratingSlider.getValue());
         inputs.add(visitidComboBox.getSelectedItem().toString());
 
-        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
 
-        RunQueryOnce(preparedStatement,"You have successfully updated location","There was an error!");
+        if(!CheckEmptyInputs(inputs)){
+            JOptionPane.showMessageDialog(null, "Please fill all the fields!");
+            return;
+        }else{
+            PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
+            RunQueryOnce(preparedStatement,"You have successfully updated location","");
+        }
     }
 
     private String getSelectedFunction(){
