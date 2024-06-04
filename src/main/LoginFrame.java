@@ -67,12 +67,21 @@ public class LoginFrame extends FrameSuperClass{
         String username = usernameTField.getText();
         String password = new String(passwordPField.getPassword());
 
+
+
         List<String> inputs=new ArrayList<>();
         inputs.add(username);
         inputs.add(password);
-        PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
 
-        RunQueryOnce(preparedStatement,"User Successfully Registered!","Registery Failed!");
+        if(!CheckEmptyInputs(inputs)){
+            JOptionPane.showMessageDialog(null, "Please fill the fields!");
+            return;
+        }else{
+            PreparedStatement preparedStatement = FillQueryWithInputs(query,inputs);
+            RunQueryOnce(preparedStatement,"User Successfully Registered!","");
+        }
+
+
     }
 
     private boolean CheckLoginInformation() throws SQLException{

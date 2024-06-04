@@ -131,7 +131,7 @@ public class ShareFunctionsFrame extends FrameSuperClass {
         friendsUsername = friendsUsernameTField.getText();
 
         if(!CheckUsernameValidity(friendsUsername) || visitid == "Not Selected"){
-            JOptionPane.showMessageDialog(null, "Please fill the blanks!");
+            JOptionPane.showMessageDialog(null, "There is no user with username: "+friendsUsername);
             return;
         }
         String checkVisitQuery = "SELECT * FROM sharedvisits WHERE username=? AND sharingUsername=? AND visitid=?";
@@ -157,7 +157,7 @@ public class ShareFunctionsFrame extends FrameSuperClass {
         inputs2.add(friendsUsername);
         inputs2.add(username);
         PreparedStatement preparedStatement2=FillQueryWithInputs(query,inputs2);
-        RunQueryOnce(preparedStatement2,"You have successfully shared visit","There was an error!");
+        RunQueryOnce(preparedStatement2,"You have successfully shared visit: "+visitid+" with "+friendsUsername,"");
     }
 
     private void addTextToDisplayArea(String text){

@@ -73,9 +73,9 @@ public class DisplayFunctionsFrame extends FrameSuperClass{
         displayVisitsOfYearButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                displayField.setText("(Country Name | City Name | Season Visited | Best Feature | Comment | Rating | Visit ID)");
                 displayTArea.setText("");
                 DisplayVisitInfoOfYear();
+
             }
         });
 
@@ -281,8 +281,9 @@ public class DisplayFunctionsFrame extends FrameSuperClass{
                 }
                 addTextToDisplayArea(visitInfo);
             }
+            displayField.setText("(Country Name | City Name | Season Visited | Best Feature | Comment | Rating | Visit ID)");
         }else{
-            JOptionPane.showMessageDialog(null, "There was an error!");
+            JOptionPane.showMessageDialog(null, "There is no record of visit in the year of: "+yearTField.getText());
         }
 
     }

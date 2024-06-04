@@ -1,6 +1,5 @@
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.*;
 import java.sql.*;
 import java.util.List;
 
@@ -24,9 +23,6 @@ public class FrameSuperClass extends JFrame {
         }
     }
 
-    public Connection GetDatabaseConnection(){
-        return databaseConnection;
-    }
 
     public void DefaultJFrameSetup(JFrame jFrame, JPanel mainPanel, int width, int height, String frameTitle, int closeOperationIndex){
         jFrame.add(mainPanel);
@@ -140,7 +136,6 @@ public class FrameSuperClass extends JFrame {
             if (resultSet.next()) {
                 return true;
             } else {
-                JOptionPane.showMessageDialog(null, "Please enter a valid username");
                 return false;
             }
         } catch (SQLException e) {
